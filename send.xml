@@ -1,0 +1,123 @@
+<project name="Send" default="send" basedir=".">
+	<basename property="project.name" file="${basedir}"/>
+	
+	<!--dir -->
+	<property name="src.dir" value="src"/>
+	<property name="bin.dir" value="bin"/>
+	<property name="lib.dir" value="lib"/>
+	<property name="runnablejar.dir" value="runnablejar"/>
+	
+	<property name="javadoc.dir" value="docs"/>
+
+	<!--scp -->
+	<property name="scp.pi.user" value="pi"  />
+	<property name="scp.pi.pass" value="raspberry" />	
+	
+	<property name="scp.edison.user" value="root"  />
+	<property name="scp.edison.pass" value="edison00" />
+
+	<!--scp dir -->
+	<property name="scp.senddir_pi" value="/home/pi/" />
+	<property name="scp.senddir_edison" value="/home/root/" />
+
+	<!--runnable classpath -->
+	<property name="runnable.classpath" 
+		value=". /home/vstone/lib/sotalib.jar /home/vstone/lib/core-2.2.jar /home/vstone/lib/javase-2.2.jar  /home/vstone/lib/jna-4.1.0.jar"/>
+	
+	<path id="build.lib">
+		<fileset dir="${lib.dir}" includes="*.jar" />
+	</path>
+	
+	<target name="clean">
+		<delete dir="${bin.dir}"/>
+		<echo>delete complete!</echo>
+	</target>
+	
+	<target name="compile" depends="clean">
+		<mkdir dir="${bin.dir}"/>
+		<javac classpathref="build.lib" srcdir="${src.dir}" destdir="${bin.dir}" encoding="utf-8"/>
+	</target>
+	
+	<target name="send" depends="setconf,send_rpi,send_edison">
+	</target>
+
+	<target name="setconf" >
+		<input
+		    message="Select Pratform?"
+		    validargs="Rpi,Edison"
+			defaultvalue="Rpi"
+		    addproperty="pratform.sota"
+		  />
+		<input message="Please enter ip:"
+			defaultvalue="192.168.1."
+		    addproperty="scp.server"/>
+		  <condition property="is.Rpi">
+	        <equals arg1="${pratform.sota}" arg2="Rpi" />
+		  </condition>
+		  <condition property="is.Edison">
+	        <equals arg1="${pratform.sota}" arg2="Edison" />
+		  </condition>
+	</target>
+
+	<target name="send_rpi" if="is.Rpi">
+		<scp todir="${scp.pi.user}:${scp.pi.pass}@${scp.server}:${scp.senddir_pi}/${project.name}" trust="yes" sftp="true" >
+			<fileset dir="../${project.name}"/>
+		</scp>
+	</target>
+
+	<target name="send_edison" if="is.Edison">
+		<scp todir="${scp.edison.user}:${scp.edison.pass}@${scp.server}:${scp.senddir_edison}${project.name}" trust="yes" sftp="true" >
+			<fileset dir="../${project.name}"/>
+		</scp>
+	</target>
+	
+	<target name="send_rpi_file" if="is.Rpi">
+		<scp file="${jar.name}" todir="${scp.pi.user}:${scp.pi.pass}@${scp.server}:${to.path}" trust="yes" sftp="true" />
+	</target>
+
+	<target name="send_edison_file" if="is.Edison">
+		<scp file="${jar.name}" todir="${scp.edison.user}:${scp.edison.pass}@${scp.server}:${to.path}" trust="yes" sftp="true"/>
+	</target>
+	
+	<target name="makeJar" depends="compile">
+		<jar jarfile="${jar.name}" basedir="${bin.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="${jar.class}"/>
+				<attribute name="Class-Path" value="${runnable.classpath}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="makeJar_and_send">
+		<antcall target="makeJar">
+			<param name="jar.name" value="${jar.name}" />
+			<param name="jar.class" value="${jar.class}" />
+		</antcall>
+		<antcall target="send_rpi_file">
+			<param name="jar.name" value="${jar.name}" />
+			<param name="to.path" value="${to.path}" />
+		</antcall>
+		<antcall target="send_edison_file">
+			<param name="jar.name" value="${jar.name}" />
+			<param name="to.path" value="${to.path}" />
+		</antcall>
+	</target>
+	
+
+	<target name="jp.vstone.sotatest.ServoSoundTest" depends="setconf">
+		<antcall target="makeJar_and_send">		
+			<param name="jar.class" value="jp.vstone.sotatest.ServoSoundTest" />
+			<param name="jar.name" value="${runnablejar.dir}/servosoundtest.jar" />
+			<param name="to.path" value="/home/vstone/vstonemagic/operation_test" />
+		</antcall>
+	</target>
+	
+	<target name="jp.vstone.commutest.ServoSoundTest" depends="setconf">
+		<antcall target="makeJar_and_send">		
+			<param name="jar.class" value="jp.vstone.commutest.ServoSoundTest" />
+			<param name="jar.name" value="${runnablejar.dir}/servosoundtest_commu.jar" />
+			<param name="to.path" value="/home/vstone/vstonemagic/operation_test" />
+		</antcall>
+	</target>
+	
+</project>
