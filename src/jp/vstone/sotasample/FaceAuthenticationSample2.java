@@ -12,6 +12,7 @@ import jp.vstone.camera.CRoboCamera;
 import jp.vstone.camera.CameraCapture;
 import jp.vstone.camera.FaceDetectResult;
 import jp.vstone.camera.FaceDetectLib.FaceUser;
+import jp.vstone.sotatalk.MotionAsSotaWish;
 import jp.vstone.sotatalk.SpeechRecog;
 import jp.vstone.sotatalk.TextToSpeechSota;
 
@@ -21,20 +22,20 @@ import jp.vstone.sotatalk.TextToSpeechSota;
  * @author Vstone
  *
  */
-public class FaceAuthenticationSample {
+public class FaceAuthenticationSample2 {
 
-	static final String TAG = "FaceAuthenticationSample";
-	static final int SMILE_POINT = 45;
-	
+	static final String TAG = "FaceAuthenticationSample2";
 	public static void main(String args[]){
 		CRobotUtil.Log(TAG, "Start " + TAG);
 
+		MotionAsSotaWish sotawish;
 		CRobotPose pose;
 		//VSMDと通信ソケット・メモリアクセス用クラス
 		CRobotMem mem = new CRobotMem();
 		//Sota用モーション制御クラス
 		CSotaMotion motion = new CSotaMotion(mem);
 		CRoboCamera cam = new CRoboCamera("/dev/video0", motion);
+		sotawish = new MotionAsSotaWish(motion);
 		
 		SpeechRecog speechrec = new SpeechRecog(motion);
 		
@@ -76,44 +77,26 @@ public class FaceAuthenticationSample {
 				else{
 					detectcnt = 0;
 				}
-				
+
 				if(detectcnt > 3){	
-					FaceUser user = cam.getUser(1000);
+					FaceUser user = cam.getUser(2000);
 					if(user != null){
 						if(user.isNewUser()){
-							CPlayWave.PlayWave(TextToSpeechSota.getTTSFile("はじめまして。あなたの名前はなんですか？") , true);
-							int retrycnt = 3;
-							for(int i = 0; i < retrycnt ;i++){
-								String name = SpeechRecog.getName(speechrec.getRecognitionNbest(10000));
-								if(name != null){
-									CPlayWave.PlayWave(TextToSpeechSota.getTTSFile("あなたの名前は," + name + ",でまちがいない？") , true);
-									
-									String resp = SpeechRecog.getYesorNo(speechrec.getRecognitionNbest(10000));
-									if(resp.contains(SpeechRecog.ANSWER_YES)){
-										user.setName(name);
-										cam.addUser(user);
-										CPlayWave.PlayWave(TextToSpeechSota.getTTSFile("オッケー！"+ name +"の顔は覚えたよ。") , true);
-										break;
-									}
-									else if(resp.contains(SpeechRecog.ANSWER_NO)){
-										CPlayWave.PlayWave(TextToSpeechSota.getTTSFile("違った？もう一度名前をおしえて？") , true);
-									}
-									else{
-										result = cam.getDetectResult();
-										if(result.isDetect()){
-											CPlayWave.PlayWave(TextToSpeechSota.getTTSFile("聞こえなかったよ。" + name + ",でまちがいない？") , true);
-										}
-										else 
-											break;
-									}
+							sotawish.Say("はじめまして。あなたの名前はなんですか？");
+							String name = null; 
+							if((name = speechrec.getName(15000, 3)) != null){
+								sotawish.Say("あなたの名前は," + name + ",でまちがいない？");
+								String yesorno= speechrec.getYesorNo(10000, 3);
+								if(yesorno != null && yesorno.contains(SpeechRecog.ANSWER_YES)){
+									user.setName(name);
+									cam.addUser(user);
+									CPlayWave.PlayWave(TextToSpeechSota.getTTSFile("オッケー！"+ name +"の顔は覚えたよ。") , true);
 								}
-								else if(i < (retrycnt - 1)){
-									result = cam.getDetectResult();
-									if(result.isDetect()){
-										CPlayWave.PlayWave(TextToSpeechSota.getTTSFile("もう一度教えて。あなたの名前はなんですか？") , true);
-									}
-									else 
-										break;
+								else if(yesorno != null && yesorno.contains(SpeechRecog.ANSWER_NO)){
+									sotawish.Say("ちがった。ごめんね。");
+								}
+								else{
+									sotawish.Say("ごめん。わからなかったよ。");
 								}
 							}
 						}

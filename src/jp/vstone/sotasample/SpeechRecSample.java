@@ -1,12 +1,11 @@
 package jp.vstone.sotasample;
 
-import jp.co.nttit.speechrec.Nbest;
 import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRobotMem;
-import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.SpeechRecog;
 import jp.vstone.sotatalk.TextToSpeechSota;
+import jp.vstone.sotatalk.SpeechRecog.RecogResult;
 
 public class SpeechRecSample {
 	static final String TAG = "SpeechRecSample";
@@ -21,13 +20,13 @@ public class SpeechRecSample {
 			//Sota仕様にVSMDを初期化
 			motion.InitRobot_Sota();
 			while(true){
-				String str = recog.getRecognition(20000);
-				CPlayWave.PlayWave(TextToSpeechSota.getTTSFile(str),true);
-			
-				//str.matches("");//正規表現
-				if(str.contains("おわり")){//含むか			
-					CPlayWave.PlayWave(TextToSpeechSota.getTTSFile("シューりょー"),true);
-					break;
+				RecogResult result = recog.getRecognition(20000);
+				if(result.recognized){
+					CPlayWave.PlayWave(TextToSpeechSota.getTTSFile(result.getBasicResult()),true);
+					if(result.getBasicResult().contains("おわり")){		
+						CPlayWave.PlayWave(TextToSpeechSota.getTTSFile("終了するよ"),true);
+						break;
+					}
 				}
 			}
 		}
