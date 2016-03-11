@@ -22,7 +22,7 @@
 
 	<!--runnable classpath -->
 	<property name="runnable.classpath" 
-		value=". /home/vstone/lib/sotalib.jar /home/vstone/lib/core-2.2.jar /home/vstone/lib/javase-2.2.jar  /home/vstone/lib/jna-4.1.0.jar"/>
+		value=". /home/vstone/lib/sotalib.jar /home/vstone/lib/SRClientHelper.jar /home/vstone/lib/core-2.2.jar /home/vstone/lib/javase-2.2.jar  /home/vstone/lib/jna-4.1.0.jar /home/vstone/lib/gson-2.6.1.jar /usr/local/share/OpenCV/java/opencv-310.jar"/>
 	
 	<path id="build.lib">
 		<fileset dir="${lib.dir}" includes="*.jar" />
