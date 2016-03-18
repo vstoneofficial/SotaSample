@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="lib/javase-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/sotalib.jar"/>
 	<classpathentry kind="lib" path="lib/SRClientHelper.jar"/>
+	<classpathentry kind="lib" path="lib/opencv-310.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
