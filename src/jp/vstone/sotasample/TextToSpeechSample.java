@@ -9,11 +9,14 @@ import jp.vstone.sotatalk.TextToSpeechSota;
 public class TextToSpeechSample {
 	static final String TAG = "SpeechRecSample";
 	public static void main(String[] args) {
-		CPlayWave.PlayWave(TextToSpeechSota.getTTS("こんにちわ。僕の名前はSotaです。"),true);
+		CPlayWave.PlayWave(TextToSpeechSota.getTTS("やっほー"),true);
+		CPlayWave.PlayWave(TextToSpeechSota.getTTS("僕の名前はSotaです。"),true);
 		byte[] data = TextToSpeechSota.getTTS("これから、よろしくね！");
 		if(data == null){
 			CRobotUtil.Log(TAG,"ERROR");
 		}
 		CPlayWave.PlayWave(data,true);
+
+		CPlayWave.PlayWave(TextToSpeechSota.getTTS("僕の名前はSotaです。僕の名前はSotaです。僕の名前はSotaです。僕の名前はSotaです。僕の名前はSotaです。僕の名前はSotaです。僕の名前はSotaです。僕の名前はSotaです。"),true);
 	}
 }
